@@ -14,10 +14,11 @@ import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
+import ra.mvcconfig.util.ConnectDB;
 
 @Configuration // đây là lớp cấu hình
 @EnableWebMvc // cho phép bật cấu hình MVC
-@ComponentScan(basePackages = "ra.mvcconfig")// phát hện component :  @Component , @Controller, @Service, @Repositoory
+@ComponentScan(basePackages = "ra.mvcconfig")// phát hện component :  @Component , @Controller, @Service, @Repository
 public class MVCConfig implements WebMvcConfigurer, ApplicationContextAware {
     private  ApplicationContext applicationContext;
     @Override
@@ -66,8 +67,13 @@ public class MVCConfig implements WebMvcConfigurer, ApplicationContextAware {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-       registry.addResourceHandler("/uploads/**","/css/**")
-               .addResourceLocations("/uploads/","/assets/css/");
+       registry.addResourceHandler("/uploads/**","/css/**","/js/**","/img/**")
+               .addResourceLocations("/uploads/","/assets/css/","/assets/js/","/assets/img/");
     }
+//    // bean ConnectDB
+//    @Bean
+//    public ConnectDB connectDB (){
+//        return  new ConnectDB();
+//    }
 }
 
