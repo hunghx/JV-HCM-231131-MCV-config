@@ -21,10 +21,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/4.2.0/firebase.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 
 <body>
+
 <div class="wrapper">
     <nav th:replace="~{admin/layout/template :: sidebar(viewName='product')}">
 
@@ -222,8 +223,9 @@
                                 <a class="navbar-brand" href="#">
                                     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">+ Add new Product</button>
                                 </a>
-                                <form class="d-flex" role="search">
+                                <form class="d-flex" role="search" action="/admin/product/search">
                                     <input class="form-control me-2 fst-italic" type="search"
+                                           name="keyword" th:value="${keyword}"
                                            placeholder="Enter product's name... "
                                            aria-label="Search">
                                     <button class="btn btn-outline-success" type="submit">Search</button>
@@ -251,8 +253,8 @@
                                 <td><img th:src="${pro.image}" alt="" width="100" height="100" style=" object-fit: cover"></td>
                                 <td th:text="${pro.price}"></td>
                                 <td th:text="${#dates.format(pro.createdAt,'dd/MM/yyyy')}"></td>
-                                <td><a href="" class="btn btn-warning">Edit</a></td>
-                                <td><a href="" class="btn btn-danger">Delete</a></td>
+                                <td><a href="" class="btn btn-warning" th:onclick="|handleEditProduct(${pro.id})|"  data-bs-toggle="modal" data-bs-target="#editModal">Edit</a></td>
+                                <td><a th:href="|/admin/product/delete?id=${pro.id}|" onclick="return confirm('Bạn có chắc  chắn muốn xóa ko ?')" class="btn btn-danger">Delete</a></td>
                             </tr>
                             
                             </tbody>
@@ -262,14 +264,14 @@
                     <!-- /.card-body -->
                     <nav aria-label="Page navigation example ">
                         <ul class="pagination float-end mx-4">
-                            <li class="page-item disabled">
-                                <a class="page-link">Previous</a>
+                            <li th:class="|page-item ${page<=0?'disabled':''}|">
+                                <a class="page-link" th:href="|?page=${page+-1}&limit=${limit}|">Previous</a>
                             </li>
-                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                            <li class="page-item"><a class="page-link" href="#">2</a></li>
-                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                            <li class="page-item">
-                                <a class="page-link" href="#">Next</a>
+                            <li th:each="p,loop:${#numbers.sequence(1,totalPages)}" th:class="|page-item ${page==loop.index?'active':''}|">
+                                <a class="page-link" th:href="|?page=${loop.index}&limit=${limit}|" th:text="${p}">1</a>
+                            </li>
+                            <li th:class="|page-item ${page+1>=totalPages?'disabled':''}|">
+                                <a class="page-link" th:href="|?page=${page+1}&limit=${limit}|">Next</a>
                             </li>
                         </ul>
                     </nav>
@@ -311,113 +313,114 @@
 <!-- Modal Add -->
 <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
+        <form action="/admin/product/add" method="post"  enctype="multipart/form-data" th:object="${product}">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Add New Product</h1>
+          <h1 class="modal-title fs-5" >Add New Product</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form>
             <div class="mb-3">
-                <label for="product_name" class="form-label">Product Name</label>
-                <input type="text" class="form-control" id="product_name">
+                <label  class="form-label">Product Name</label>
+                <input type="text" class="form-control" th:field="*{name}">
               </div>
             <div class="mb-3">
-                <label for="product_image" class="form-label">Product Image</label>
-                <input type="file" class="form-control" id="product_image" multiple>
-                <progress class="d-block" value="0" max="100" id="uploader">0%</progress>
-                <div id="list_images"></div>
+                <label  class="form-label">Product Image</label>
+                <input type="file" class="form-control" th:field="*{file}">
+                <div id="preview"></div>
               </div>
               <div class="mb-3">
-                <label for="description" class="form-label">Descriptions</label>
-                <textarea class="form-control" id="description" rows="3"></textarea>
+                <label class="form-label">Descriptions</label>
+                <textarea class="form-control" rows="3" th:field="*{description}"></textarea>
               </div>
               <div class="mb-3">
-                <label for="product_price" class="form-label">Product Price</label>
-                <input type="number" class="form-control" id="product_price">
+                <label class="form-label">Product Price</label>
+                <input type="text" class="form-control" th:field="*{price}" >
               </div>
-              <div class="mb-3">
-                <label for="product_status" class="form-label">Product Status</label>
-                <select  id="product_status">
-                    <option value="true">Bán</option>
-                    <option value="false">Không Bán</option>
-                </select>
+            <div class="mb-3">
+                <label  class="form-label">Product Stock</label>
+                <input type="number" class="form-control" th:field="*{stock}">
               </div>
-              <div class="mb-3">
-                <label for="category" class="form-label">Category</label>
-                <select  id="category">
-                   
-                </select>
-              </div>
-          </form>
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="addNewProduct()">ADD</button>
+          <button type="submit" class="btn btn-primary" >ADD</button>
         </div>
       </div>
+        </form>
     </div>
   </div>
+<!-- Modal edit -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
+        <form action="/admin/product/update" method="post"  enctype="multipart/form-data" th:object="${product}">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Product</h1>
+          <h1 class="modal-title fs-5" >Edit Product</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form>
+            <input type="hidden" th:field="*{id}" readonly>
             <div class="mb-3">
-                <label for="product_id" class="form-label">Product ID</label>
-                <input type="text" class="form-control" id="product_id" readonly>
-              </div>
-            <div class="mb-3">
-                <label for="product_name" class="form-label">Product Name</label>
-                <input type="text" class="form-control" id="product_name">
+                <label class="form-label">Product Name</label>
+                <input type="text" class="form-control" th:field="*{name}">
               </div>
             <div class="mb-3">
-                <label for="product_image" class="form-label">Product Image</label>
-                <input type="file" class="form-control" id="product_image">
+                <label  class="form-label">Product Image</label>
+                <input type="file" class="form-control" th:field="*{file}"><br>
+                <img id="previewUp" src="" alt="" width="100" height="100" style=" object-fit: cover" />
               </div>
               <div class="mb-3">
-                <label for="description" class="form-label">Descriptions</label>
-                <textarea class="form-control" id="description" rows="3"></textarea>
+                <label class="form-label">Descriptions</label>
+                <textarea class="form-control" rows="3" th:field="*{description}"></textarea>
               </div>
               <div class="mb-3">
-                <label for="createdDate" class="form-label">CreatedDate</label>
-                <input type="text" class="form-control" id="createdDate" readonly>
+                <label class="form-label">Product Price</label>
+                <input type="text" class="form-control" th:field="*{price}" >
               </div>
-              <div class="mb-3">
-                <label for="product_price" class="form-label">Product Price</label>
-                <input type="number" class="form-control" id="product_price">
+            <div class="mb-3">
+                <label class="form-label">Product Stock</label>
+                <input type="number" class="form-control" th:field="*{stock}">
               </div>
-              <div class="mb-3">
-                <label for="product_status" class="form-label">Product Status</label>
-                <select  id="product_status">
-                    <option value="true">Bán</option>
-                    <option value="false">Không Bán</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label for="category" class="form-label">Category</label>
-                <select  id="category">
-                    <option value="1">Quần</option>
-                    <option value="2">Áo</option>
-                </select>
-              </div>
-          </form>
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="addNewCategory()">UPDATE</button>
+          <button type="submit" class="btn btn-primary" >Update</button>
         </div>
       </div>
+        </form>
     </div>
   </div>
+
 
 <script src="/js/app.js"></script>
 
-
+<script>
+    let formEdit  = document.querySelector("#editModal");
+    let idEdit= formEdit.querySelector("#id");
+    let nameEdit= formEdit.querySelector("#name");
+    let imageEdit= formEdit.querySelector("#previewUp");
+    let priceEdit= formEdit.querySelector("#price");
+    let descriptionEdit= formEdit.querySelector("#description");
+    let stockEdit= formEdit.querySelector("#stock");
+        function handleEditProduct (id){
+        console.log("id",id)
+        $.ajax({
+            url: "http://localhost:8080/admin/product/edit/"+id,
+            success: function (res) {
+                console.log("res",res)
+                idEdit.value = res.id;
+                nameEdit.value = res.name;
+                imageEdit.src = res.image;
+                priceEdit.value = res.price;
+                descriptionEdit.innerText = res.description;
+                stockEdit.value = res.stock;
+            }
+        });
+    }
+</script>
 </body>
 
 </html>

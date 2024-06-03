@@ -11,6 +11,7 @@ import ra.mvcconfig.model.Product;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +26,16 @@ public class ProductServiceImpl implements IProductService{
     @Override
     public List<ProductResponse> findAll() {
         return productDao.findAll().stream().map(ProductResponse::new).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Product> findByPagination(Integer page, Integer limit) {
+        return productDao.findByPagination(page,limit);
+    }
+
+    @Override
+    public long getTotalsElement() {
+        return productDao.getTotalsElement();
     }
 
     @Override

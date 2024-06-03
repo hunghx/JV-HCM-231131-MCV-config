@@ -7,6 +7,7 @@ import ra.mvcconfig.util.ConnectDB;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Repository
@@ -42,6 +43,58 @@ public class ProductDaoImpl implements IProductDao {
             connectDB.closeConnection(conn);
         }
 
+    }
+
+    @Override
+    public List<Product> findByPagination(Integer page, Integer limit) {
+        List<Product> products = new ArrayList<>();
+        // mở 1 kết nối
+        Connection conn = connectDB.getConnection();
+        try {
+            CallableStatement callSt = conn.prepareCall("select * from product where is_deleted = false limit ? offset ?");
+            callSt.setInt(1, limit);
+            callSt.setInt(2,limit*page);
+
+            // thực thi sql
+            ResultSet rs = callSt.executeQuery(); // thực trhi câu lệnh select
+            while (rs.next()){
+                Product product = new Product(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getDouble("price"),
+                        rs.getString("description"),
+                        rs.getString("image"),
+                        rs.getInt("stock"),
+                        rs.getDate("created_at"),
+                        rs.getBoolean("is_deleted")
+                ) ;
+                products.add(product);
+            }
+            return products;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            connectDB.closeConnection(conn);
+        }
+    }
+
+    @Override
+    public long getTotalsElement() {
+        Connection conn = connectDB.getConnection();
+        try {
+            CallableStatement callSt = conn.prepareCall("select count(*) total from product where is_deleted = false");
+            // thực thi sql
+            ResultSet rs = callSt.executeQuery(); // thực trhi câu lệnh select
+            if (rs.next()){
+                return rs.getLong("total");
+//                return rs.getLong(0);
+            }
+            return 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            connectDB.closeConnection(conn);
+        }
     }
 
     @Override
