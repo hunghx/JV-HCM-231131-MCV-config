@@ -22,6 +22,8 @@ public class ProductController {
         System.out.println("id: "+id);
         ModelAndView modelAndView = new ModelAndView("home");
         modelAndView.addObject("name","hung");
+        modelAndView.addObject("totalPages",10);
+        modelAndView.addObject("list",new Integer[]{1,3,5,7,9});
         return modelAndView;
     }
     // các annotation lấy tham số từ request
