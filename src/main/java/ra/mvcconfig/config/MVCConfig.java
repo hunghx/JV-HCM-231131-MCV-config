@@ -14,7 +14,7 @@ import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
-import ra.mvcconfig.util.ConnectDB;
+
 
 @Configuration // đây là lớp cấu hình
 @EnableWebMvc // cho phép bật cấu hình MVC
@@ -70,10 +70,6 @@ public class MVCConfig implements WebMvcConfigurer, ApplicationContextAware {
        registry.addResourceHandler("/uploads/**","/css/**","/js/**","/img/**")
                .addResourceLocations("/uploads/","/assets/css/","/assets/js/","/assets/img/");
     }
-//    // bean ConnectDB
-//    @Bean
-//    public ConnectDB connectDB (){
-//        return  new ConnectDB();
-//    }
+
 }
 

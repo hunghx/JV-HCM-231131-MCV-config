@@ -9,14 +9,15 @@ import ra.mvcconfig.dto.response.ProductResponse;
 import ra.mvcconfig.model.Product;
 
 import javax.servlet.ServletContext;
+import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class ProductServiceImpl implements IProductService{
     private static final String uploadFolder = "C:\\Users\\AD\\Desktop\\mvc-config\\src\\main\\webapp\\uploads\\";
     @Autowired
@@ -51,19 +52,18 @@ public class ProductServiceImpl implements IProductService{
     @Override
     public void save(ProductRequest request) {
         // chuyển đổi
-        Product product = Product.builder()
-                .id(request.getId())
-                .name(request.getName())
-                .stock(request.getStock())
-                .price(request.getPrice())
-                .description(request.getDescription())
-                .createdAt(new Date())
-                .isDeleted(false)
-                .build();
-
-        if (request.getId() != null){
-            product.setImage(productDao.findById(request.getId()).getImage());
-        }
+        Product product = new Product();
+         if (request.getId() != null){
+             // neu laf chuc nang cap nhap
+             product= productDao.findById(request.getId());
+         }else {
+            product.setCreatedAt(new Date());
+            product.setIsDeleted(false);
+         }
+         product.setName(request.getName());
+         product.setDescription(request.getDescription());
+         product.setPrice(request.getPrice());
+         product.setStock(request.getStock());
 
         // upload mới
         if (request.getFile()!=null && request.getFile().getSize()!=0){

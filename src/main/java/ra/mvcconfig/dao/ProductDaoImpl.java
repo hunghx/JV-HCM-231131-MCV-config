@@ -1,208 +1,80 @@
 package ra.mvcconfig.dao;
 
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ra.mvcconfig.model.Product;
-import ra.mvcconfig.util.ConnectDB;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collections;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Selection;
 import java.util.List;
 
 @Repository
 public class ProductDaoImpl implements IProductDao {
     @Autowired
-    private ConnectDB connectDB;
+    private SessionFactory sessionFactory;
     @Override
     public List<Product> findAll() {
-        List<Product> products = new ArrayList<>();
-        // mở 1 kết nối
-        Connection conn = connectDB.getConnection();
-        try {
-            CallableStatement callSt = conn.prepareCall("select * from product where is_deleted = false");
-            // thực thi sql
-            ResultSet rs = callSt.executeQuery(); // thực trhi câu lệnh select
-            while (rs.next()){
-                Product product = new Product(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getDouble("price"),
-                        rs.getString("description"),
-                        rs.getString("image"),
-                        rs.getInt("stock"),
-                        rs.getDate("created_at"),
-                        rs.getBoolean("is_deleted")
-                ) ;
-                products.add(product);
-            }
-            return products;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            connectDB.closeConnection(conn);
-        }
-
+        // mở 1 session hoặc lấy ra session hiện tại
+        Session session = sessionFactory.getCurrentSession();
+//        TypedQuery<Product> query  = session.createQuery("from Product",Product.class);
+//        List<Product> list = query.getResultList();
+//        return list;
+        return session.createQuery("from Product where isDeleted = false ", Product.class).list();
+//
+//        // su dung Criteria - ko sủ dụng HQL
+//        CriteriaBuilder builder = session.getCriteriaBuilder();
+//        CriteriaQuery<Product> criteria = builder.createQuery(Product.class); // chỉ định lớp thực hiện truy vấn
+//        Root<Product> root = criteria.from(Product.class); // chỉ định các coojt muốn lây
+//        criteria.select(root); // lấy tất cả cột của Product
+//        return session.createQuery(criteria).getResultList();
     }
 
     @Override
-    public List<Product> findByPagination(Integer page, Integer limit) {
-        List<Product> products = new ArrayList<>();
-        // mở 1 kết nối
-        Connection conn = connectDB.getConnection();
-        try {
-            CallableStatement callSt = conn.prepareCall("select * from product where is_deleted = false limit ? offset ?");
-            callSt.setInt(1, limit);
-            callSt.setInt(2,limit*page);
-
-            // thực thi sql
-            ResultSet rs = callSt.executeQuery(); // thực trhi câu lệnh select
-            while (rs.next()){
-                Product product = new Product(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getDouble("price"),
-                        rs.getString("description"),
-                        rs.getString("image"),
-                        rs.getInt("stock"),
-                        rs.getDate("created_at"),
-                        rs.getBoolean("is_deleted")
-                ) ;
-                products.add(product);
-            }
-            return products;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            connectDB.closeConnection(conn);
-        }
-    }
-
-    @Override
-    public long getTotalsElement() {
-        Connection conn = connectDB.getConnection();
-        try {
-            CallableStatement callSt = conn.prepareCall("select count(*) total from product where is_deleted = false");
-            // thực thi sql
-            ResultSet rs = callSt.executeQuery(); // thực trhi câu lệnh select
-            if (rs.next()){
-                return rs.getLong("total");
-//                return rs.getLong(0);
-            }
-            return 0;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            connectDB.closeConnection(conn);
-        }
+    public List<Product> findByPagination(Integer page, Integer size) {
+        // hibernate ko hỗ trợ phần trang (limit )
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("from Product where isDeleted = false", Product.class)
+                .setMaxResults(size)
+                .setFirstResult(page*size)
+                .list();
     }
 
     @Override
     public List<Product> searchByName(String keyword) {
-        List<Product> products = new ArrayList<>();
-        // mở 1 kết nối
-        Connection conn = connectDB.getConnection();
-        try {
-            CallableStatement callSt = conn.prepareCall("select * from product where is_deleted = false and name like ?");
-            // truyền tham số
-            callSt.setString(1,"%"+keyword+"%");
-            // thực thi sql
-            ResultSet rs = callSt.executeQuery(); // thực trhi câu lệnh select
-            while (rs.next()){
-                Product product = new Product(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getDouble("price"),
-                        rs.getString("description"),
-                        rs.getString("image"),
-                        rs.getInt("stock"),
-                        rs.getDate("created_at"),
-                        rs.getBoolean("is_deleted")
-                ) ;
-                products.add(product);
-            }
-            return products;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            connectDB.closeConnection(conn);
-        }
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("from Product p where p.isDeleted = false and p.name like concat('%',:key,'%')", Product.class)
+                .setParameter("key",keyword)
+                .list();
     }
 
     @Override
     public Product findById(Integer id) {
-        Product product = null;
-        // mở 1 kết nối
-        Connection conn = connectDB.getConnection();
-        try {
-            CallableStatement callSt = conn.prepareCall("select * from product  where is_deleted = false and id =?");
-            callSt.setInt(1, id);
-            // thực thi sql
-            ResultSet rs = callSt.executeQuery(); // thực trhi câu lệnh select
-            if (rs.next()){
-                product = new Product(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getDouble("price"),
-                        rs.getString("description"),
-                        rs.getString("image"),
-                        rs.getInt("stock"),
-                        rs.getDate("created_at"),
-                        rs.getBoolean("is_deleted")
-                ) ;
-            }
-            return product;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            connectDB.closeConnection(conn);
-        }
+        Session session = sessionFactory.getCurrentSession();
+        return session.get(Product.class,id);
     }
 
     @Override
     public void save(Product product) {
-        // mở 1 kết nối
-        Connection conn = connectDB.getConnection();
-        CallableStatement callSt = null;
-        try {
-            if (product.getId()==null){
-                callSt = conn.prepareCall("insert into product(name, price, description, image, stock,created_at,is_deleted) value (?,?,?,?,?,?,?)");
-                callSt.setString(1,product.getName());
-                callSt.setDouble(2,product.getPrice());
-                callSt.setString(3,product.getDescription());
-                callSt.setString(4,product.getImage());
-                callSt.setInt(5,product.getStock());
-                callSt.setDate(6, new Date(product.getCreatedAt().getTime()));
-                callSt.setBoolean(7,product.getIsDeleted());
-            }else {
-                callSt = conn.prepareCall("update  product set name =?, price=?, description=?, image=?, stock=? where id = ?");
-                callSt.setString(1,product.getName());
-                callSt.setDouble(2,product.getPrice());
-                callSt.setString(3,product.getDescription());
-                callSt.setString(4,product.getImage());
-                callSt.setInt(5,product.getStock());
-                callSt.setInt(6,product.getId());
-            }
-            callSt.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            connectDB.closeConnection(conn);
-        }
+        Session session = sessionFactory.getCurrentSession();
+        session.saveOrUpdate(product); // kieemr tra theo dia chi tham chieu
     }
 
     @Override
     public void deleteById(Integer id) {
-        Connection conn = connectDB.getConnection();
+        Session session = sessionFactory.getCurrentSession();
+        Product product = session.get(Product.class,id);
+        session.delete(product);
+    }
 
-        try {
-            CallableStatement callSt = conn.prepareCall("update product set is_deleted = true where id = ?");
-            callSt.setInt(1,id);
-            callSt.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            connectDB.closeConnection(conn);
-        }
+    @Override
+    public long getTotalsElement() {
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("select count(P) from Product P where isDeleted = false ",Long.class)
+                .getSingleResult();
     }
 }
