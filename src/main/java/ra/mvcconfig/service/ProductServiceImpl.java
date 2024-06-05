@@ -6,6 +6,7 @@ import org.springframework.util.FileCopyUtils;
 import ra.mvcconfig.dao.IProductDao;
 import ra.mvcconfig.dto.request.ProductRequest;
 import ra.mvcconfig.dto.response.ProductResponse;
+import ra.mvcconfig.model.Category;
 import ra.mvcconfig.model.Product;
 
 import javax.servlet.ServletContext;
@@ -26,7 +27,8 @@ public class ProductServiceImpl implements IProductService{
     private ServletContext servletContext;
     @Override
     public List<ProductResponse> findAll() {
-        return productDao.findAll().stream().map(ProductResponse::new).collect(Collectors.toList());
+        List<Product> list = productDao.findAll();
+        return list.stream().map(ProductResponse::new).collect(Collectors.toList());
     }
 
     @Override

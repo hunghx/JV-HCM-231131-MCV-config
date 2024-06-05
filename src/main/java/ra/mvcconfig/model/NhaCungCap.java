@@ -5,19 +5,18 @@ import lombok.*;
 import javax.persistence.*;
 import java.util.List;
 
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @Builder
 @Entity
-public class Category {
+public class NhaCungCap {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
-    private Boolean isDeleted;
-//    @OneToMany(mappedBy = "category") // bn nghịch đao
-//    private List<Product> products;
+
+    @ManyToMany(mappedBy = "nhaCungCapList")
+    private List<Product> products;
 }
