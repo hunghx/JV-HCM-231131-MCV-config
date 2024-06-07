@@ -7,52 +7,6 @@
 </head>
 <body>
 <!-- nhúng head fragment-->
-<nav th:replace="~{layout/header :: head(username=${name},age=100)}"></nav>
-
-<!-- th : text -  hiển thị văn bản -->
-<!--<h1 th:text="${'List : '+ name}">List : ${name}</h1>-->
-
-<!-- Vòng lặp : th:each-->
-<ul>
-    <li th:each="num,loop : ${list}" th:text="${num}" th:id="${loop.index}">
-
-    </li>
-</ul>
-
-<div>
-    <a th:href="@{|?page=${loop.index}|}" th:each="page,loop:${#numbers.sequence(1,totalPages)}" th:text="${page}"></a>
-</div>
-
-<!-- câu ệnh điều kiện -->
-<th:block th:if="${totalPages > 5}">
-    <p>Lơn hơn 5</p>
-</th:block>
-<th:block th:unless="${totalPages > 5}">
-    <p>Bé hơn hoặc bằng 5</p>
-</th:block>
-
-<!-- so sánh theo giá trị -->
-<th:block th:switch="${name}">
-    <p th:case="khanh">tên là khánh</p>
-    <p th:case="hung">tên là hung</p>
-    <p th:case="nam">tên là nam</p>
-    <p th:case="hung">tên là hung 1</p>
-    <p th:case="*">tên là default</p>
-</th:block>
-
-<h1 th:text="|List : ${name}|">List : ${name}</h1>
-<form method="post" action="/product/add">
-    <input type="text" name="id" id="1">
-    <input type="text" name="name" id="2">
-    <button type="submit">ADĐ</button>
-</form>
-
-<form action="/upload" method="post" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <button type="submit">ADD</button>
-</form>
-
-<!-- nhúng foot fragment-->
-<th:block th:insert="~{layout/footer :: foot}"/>
+<h1 th:text="|Bạn đã truy cập trang này ${count} lần|"> </h1>
 </body>
 </html>
