@@ -20,8 +20,8 @@ public class Tets {
     @GetMapping
     public String test() {
         List<ProductResponse> products = productService.findAll();
-        ProductRequest p = new ProductRequest(null,"áodai",10.0,null,null,99,null);
-        productService.save(p);
+//        ProductRequest p = new ProductRequest(null,"áodai",10.0,null,null,99,null);
+//        productService.save(p);
         return "home";
     }
 }

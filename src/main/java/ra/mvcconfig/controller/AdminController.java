@@ -3,11 +3,14 @@ package ra.mvcconfig.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ra.mvcconfig.dto.request.ProductRequest;
 import ra.mvcconfig.dto.response.ProductResponse;
 import ra.mvcconfig.model.Product;
 import ra.mvcconfig.service.IProductService;
+
+import javax.validation.Valid;
 
 @Controller
 @RequestMapping("/admin")
@@ -44,11 +47,18 @@ public class AdminController {
     public String user() {
         return "admin/user";
     }
-
-
+    @GetMapping("/product/add")
+    public String add(Model model){
+        model.addAttribute("product",new ProductRequest());
+        return "admin/product-add";
+    }
     // product mananger
     @PostMapping("/product/add")
-    public  String doAdd(@ModelAttribute("product") ProductRequest request){
+    public  String doAdd(@Valid @ModelAttribute("product") ProductRequest request, BindingResult result,Model model){
+        if (result.hasErrors()){
+            model.addAttribute("product",request);
+            return "admin/product-add";
+        }
         productService.save(request);
         return "redirect:/admin/product"; //điều hướng theo đường dẫn
     }
