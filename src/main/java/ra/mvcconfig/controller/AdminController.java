@@ -9,12 +9,15 @@ import ra.mvcconfig.dto.request.ProductRequest;
 import ra.mvcconfig.dto.response.ProductResponse;
 import ra.mvcconfig.model.Product;
 import ra.mvcconfig.service.IProductService;
+import ra.mvcconfig.validator.ProductValidator;
 
 import javax.validation.Valid;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
+    @Autowired
+    private ProductValidator validator;
     @Autowired
     private IProductService productService;
     @GetMapping
@@ -55,6 +58,7 @@ public class AdminController {
     // product mananger
     @PostMapping("/product/add")
     public  String doAdd(@Valid @ModelAttribute("product") ProductRequest request, BindingResult result,Model model){
+//         validator.validate(request,result);
         if (result.hasErrors()){
             model.addAttribute("product",request);
             return "admin/product-add";

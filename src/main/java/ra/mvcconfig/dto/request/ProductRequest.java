@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
+import ra.mvcconfig.validator.ProductNameUnique;
 
 import javax.validation.constraints.*;
 
@@ -25,7 +26,8 @@ public class ProductRequest {
 //    @Max() // gia trị lớn nhất
 private Integer id;
     @NotBlank(message = "Khong duoc de trong")
-    @Pattern(regexp = "^\\w{6,}$", message = "ít nhất 6 kí tự, ko đc có kí đặc biệt")
+//    @Pattern(regexp = "^\\w{6,}$", message = "ít nhất 6 kí tự, ko đc có kí đặc biệt")
+    @ProductNameUnique
     private String name;
     @NotNull
     @Min(value = 0)

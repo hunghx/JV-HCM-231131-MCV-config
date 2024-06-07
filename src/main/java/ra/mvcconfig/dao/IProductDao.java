@@ -12,4 +12,5 @@ public interface IProductDao {
     void save(Product product);  // vừa thêm moi vưa cap nhap
     void deleteById(Integer id);
     long getTotalsElement();
+    boolean existByName(String name);
 }

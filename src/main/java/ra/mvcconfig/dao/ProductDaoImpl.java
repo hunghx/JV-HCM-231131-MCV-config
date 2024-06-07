@@ -59,6 +59,13 @@ public class ProductDaoImpl implements IProductDao {
     }
 
     @Override
+    public boolean existByName(String name) {
+        Session session = sessionFactory.getCurrentSession();
+        return !session.createQuery("from Product where name like :name")
+                .setParameter("name",name).list().isEmpty();
+    }
+
+    @Override
     public void save(Product product) {
         Session session = sessionFactory.getCurrentSession();
         session.saveOrUpdate(product); // kieemr tra theo dia chi tham chieu

@@ -42,6 +42,11 @@ public class ProductServiceImpl implements IProductService{
     }
 
     @Override
+    public boolean existByName(String name) {
+        return productDao.existByName(name);
+    }
+
+    @Override
     public List<ProductResponse> searchByName(String keyword) {
         return productDao.searchByName(keyword).stream().map(ProductResponse::new).collect(Collectors.toList());
     }

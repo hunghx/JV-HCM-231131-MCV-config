@@ -14,4 +14,5 @@ public interface IProductService {
     void save(ProductRequest request);  // vừa thêm moi vưa cap nhap
     void deleteById(Integer id);
     long getTotalsElement();
+    boolean existByName(String name);
 }
